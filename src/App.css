@@ -1,0 +1,21 @@
+.App {
+  text-align: center;
+}
+
+.img-wrap {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.img-item {
+  flex-basis: 25%;
+  /* 每个子元素占据四列中的一列 */
+  /* padding: 10px; */
+  /* 项目间的间距 */
+  box-sizing: border-box;
+  /* 考虑边框和填充的盒模型 */
+}
+
+.img-item img {
+  width: 100%;
+}
