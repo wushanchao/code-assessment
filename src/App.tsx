@@ -26,20 +26,32 @@ async function getFlickrImgs(keyword: string): Promise<any> {
 
 }
 
+async function getNextFlickrImgs(keyword: string, pageNum: number): Promise<any> {
+  // arg is pageNum?
+  const searchApi = `https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=3e7cc266ae2b0e0d78e279ce8e361736&format=json&nojsoncallback=1&safe_search=1&text=${keyword}&pageNum=${pageNum}`;
+  try {
+    const searchRes = await fetch(searchApi);
+    return searchRes.json();
+  }
+  catch (err) {
+    console.log(err);
+    return null;
+  }
+
+}
+
 function App() {
   const [stateSearchStr, setStateSearchStr] = useState('');
   const [statePhotos, setStatePhotos] = useState<Photo[]>([]);
   const [statePage, setStatePage] = useState(1);
-
-  const getImages = () => { };
-
 
   const searchImg = async (stateSearchStr: string) => {
     if (!stateSearchStr) {
       return;
     }
 
-
+    setStatePhotos([]);
+    setStatePage(1);
 
 
     const data = await getFlickrImgs(stateSearchStr);
@@ -59,8 +71,24 @@ function App() {
 
   }
 
-  const onScroll = () => {
+  const getNextPageImg = async (nextPage: number) => {
+    await getNextFlickrImgs(stateSearchStr, nextPage);
+  }
 
+  const onScroll = () => {
+    if (
+      window.innerHeight + document.documentElement.scrollTop ===
+      document.documentElement.offsetHeight
+    ) {
+      loadMore();
+    }
+  };
+
+  const loadMore = async () => {
+    console.log('loadMore');
+    const nextPage = statePage + 1;
+    setStatePage(nextPage);
+    await getNextPageImg(nextPage);
   };
 
   useEffect(() => {
