@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { throttle } from 'lodash';
 import './App.css';
 
 type Photo = {
@@ -76,12 +77,11 @@ function App() {
   }
 
   const onScroll = () => {
-    if (
-      window.innerHeight + document.documentElement.scrollTop ===
-      document.documentElement.offsetHeight
-    ) {
-      loadMore();
-    }
+    console.log('offsetHeight', document.documentElement.offsetHeight);
+    console.log('innerHeight+scrollTop', window.innerHeight + document.documentElement.scrollTop);
+    // if ((window.innerHeight + document.documentElement.scrollTop) > (document.documentElement.offsetHeight - 10)) {
+    //   loadMore();
+    // }
   };
 
   const loadMore = async () => {
@@ -92,10 +92,12 @@ function App() {
   };
 
   useEffect(() => {
-    window.addEventListener('scroll', onScroll);
+    const onScrollThrottle = throttle(onScroll, 500);
+
+    window.addEventListener('scroll', onScrollThrottle);
 
     return () => {
-      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('scroll', onScrollThrottle);
     }
   }, []);
 
