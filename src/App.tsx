@@ -80,13 +80,17 @@ function App() {
       <button onClick={() => {
         searchImg(stateSearchStr)
       }}>search</button>
-      <div>
+      <div className='img-wrap'>
         {statePhotos.map((photo) => (
-          <img
-            key={photo.id}
-            src={`http://farm${photo.farm}.static.flickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`}
-            alt={photo.title}
-          />
+          <div className='img-item'>
+            <img
+              key={photo.id}
+              src={`http://farm${photo.farm}.static.flickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`}
+              alt={photo.title}
+
+            />
+          </div>
+
         ))}
 
       </div>
