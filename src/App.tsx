@@ -15,8 +15,15 @@ type Photo = {
 
 async function getFlickrImgs(keyword: string): Promise<any> {
   const searchApi = `https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=3e7cc266ae2b0e0d78e279ce8e361736&format=json&nojsoncallback=1&safe_search=1&text=${keyword}`;
-  const searchRes = await fetch(searchApi);
-  return searchRes.json();
+  try {
+    const searchRes = await fetch(searchApi);
+    return searchRes.json();
+  }
+  catch (err) {
+    console.log(err);
+    return null;
+  }
+
 }
 
 function App() {
@@ -28,6 +35,13 @@ function App() {
 
 
   const searchImg = async (stateSearchStr: string) => {
+    if (!stateSearchStr) {
+      return;
+    }
+
+
+
+
     const data = await getFlickrImgs(stateSearchStr);
     if (!data) {
       return;
@@ -38,7 +52,9 @@ function App() {
       return;
     }
 
-    const { page, pages, perpage, Photo, total } = photos;
+    const { page, pages, perpage, photo, total } = photos;
+
+    setStatePhotos((prevPhotos) => [...prevPhotos, ...photo]);
 
 
   }
