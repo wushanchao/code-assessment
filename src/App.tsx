@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { throttle } from 'lodash';
 import './App.css';
 
@@ -29,7 +29,7 @@ async function getFlickrImgs(keyword: string): Promise<any> {
 
 async function getNextFlickrImgs(keyword: string, pageNum: number): Promise<any> {
   // arg is pageNum?
-  const searchApi = `https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=3e7cc266ae2b0e0d78e279ce8e361736&format=json&nojsoncallback=1&safe_search=1&text=${keyword}&pageNum=${pageNum}`;
+  const searchApi = `https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=3e7cc266ae2b0e0d78e279ce8e361736&format=json&nojsoncallback=1&safe_search=1&text=${keyword}&page=${pageNum}`;
   try {
     const searchRes = await fetch(searchApi);
     return searchRes.json();
@@ -44,7 +44,9 @@ async function getNextFlickrImgs(keyword: string, pageNum: number): Promise<any>
 function App() {
   const [stateSearchStr, setStateSearchStr] = useState('');
   const [statePhotos, setStatePhotos] = useState<Photo[]>([]);
-  const [statePage, setStatePage] = useState(1);
+  // const [statePage, setStatePage] = useState(1);
+  const pageRef = useRef(1);
+  const searchStrRef = useRef('');
 
   const searchImg = async (stateSearchStr: string) => {
     if (!stateSearchStr) {
@@ -52,7 +54,7 @@ function App() {
     }
 
     setStatePhotos([]);
-    setStatePage(1);
+    pageRef.current = 1;
 
 
     const data = await getFlickrImgs(stateSearchStr);
@@ -73,26 +75,44 @@ function App() {
   }
 
   const getNextPageImg = async (nextPage: number) => {
-    await getNextFlickrImgs(stateSearchStr, nextPage);
+    const data = await getNextFlickrImgs(searchStrRef.current, nextPage);
+    if (!data) {
+      return;
+    }
+
+    const { stat, photos } = data;
+    if (!stat && stat !== 'ok') {
+      return;
+    }
+
+    const { photo } = photos;
+    setStatePhotos((prevPhotos) => [...prevPhotos, ...photo]);
   }
 
   const onScroll = () => {
     console.log('offsetHeight', document.documentElement.offsetHeight);
     console.log('innerHeight+scrollTop', window.innerHeight + document.documentElement.scrollTop);
-    // if ((window.innerHeight + document.documentElement.scrollTop) > (document.documentElement.offsetHeight - 10)) {
-    //   loadMore();
-    // }
+    if (Math.ceil(window.innerHeight + document.documentElement.scrollTop) >= (document.documentElement.offsetHeight)) {
+      loadMore();
+    }
   };
 
-  const loadMore = async () => {
+  // const loadMore = async () => {
+  //   console.log('loadMore');
+  //   const nextPage = pageRef.current + 1;
+  //   pageRef.current = nextPage;
+  //   await getNextPageImg(stateSearchStr, nextPage);
+  // };
+
+  const loadMore = () => {
     console.log('loadMore');
-    const nextPage = statePage + 1;
-    setStatePage(nextPage);
-    await getNextPageImg(nextPage);
+    const nextPage = pageRef.current + 1;
+    pageRef.current = nextPage;
+    getNextPageImg(nextPage);
   };
 
   useEffect(() => {
-    const onScrollThrottle = throttle(onScroll, 500);
+    const onScrollThrottle = throttle(onScroll, 1000);
 
     window.addEventListener('scroll', onScrollThrottle);
 
@@ -100,6 +120,12 @@ function App() {
       window.removeEventListener('scroll', onScrollThrottle);
     }
   }, []);
+
+
+  useEffect(() => {
+    searchStrRef.current = stateSearchStr;
+  }, [stateSearchStr]);
+
 
 
   return (
