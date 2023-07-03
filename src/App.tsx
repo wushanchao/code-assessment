@@ -110,9 +110,9 @@ function App() {
       }}>search</button>
       <div className='img-wrap'>
         {statePhotos.map((photo) => (
-          <div className='img-item'>
+          <div key={photo.id} className='img-item'>
             <img
-              key={photo.id}
+
               src={`http://farm${photo.farm}.static.flickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`}
               alt={photo.title}
 
