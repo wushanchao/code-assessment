@@ -47,6 +47,7 @@ function App() {
   // const [statePage, setStatePage] = useState(1);
   const pageRef = useRef(1);
   const searchStrRef = useRef('');
+  const loadingRef = useRef(false);
 
   const searchImg = async (stateSearchStr: string) => {
     if (!stateSearchStr) {
@@ -75,7 +76,10 @@ function App() {
   }
 
   const getNextPageImg = async (nextPage: number) => {
+
+    loadingRef.current = true;
     const data = await getNextFlickrImgs(searchStrRef.current, nextPage);
+    loadingRef.current = false;
     if (!data) {
       return;
     }
@@ -90,22 +94,20 @@ function App() {
   }
 
   const onScroll = () => {
-    console.log('offsetHeight', document.documentElement.offsetHeight);
+    console.log('scrollHeight', document.documentElement.scrollHeight);
     console.log('innerHeight+scrollTop', window.innerHeight + document.documentElement.scrollTop);
-    if (Math.ceil(window.innerHeight + document.documentElement.scrollTop) >= (document.documentElement.offsetHeight)) {
+    if (Math.ceil(window.innerHeight + document.documentElement.scrollTop) >= (document.documentElement.scrollHeight)) {
       loadMore();
     }
   };
 
-  // const loadMore = async () => {
-  //   console.log('loadMore');
-  //   const nextPage = pageRef.current + 1;
-  //   pageRef.current = nextPage;
-  //   await getNextPageImg(stateSearchStr, nextPage);
-  // };
-
   const loadMore = () => {
     console.log('loadMore');
+
+    // 
+    if (loadingRef.current) {
+      return;
+    }
     const nextPage = pageRef.current + 1;
     pageRef.current = nextPage;
     getNextPageImg(nextPage);
@@ -140,10 +142,8 @@ function App() {
         {statePhotos.map((photo) => (
           <div key={photo.id} className='img-item'>
             <img
-
               src={`http://farm${photo.farm}.static.flickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`}
               alt={photo.title}
-
             />
           </div>
 
