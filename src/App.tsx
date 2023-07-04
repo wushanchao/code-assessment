@@ -14,7 +14,18 @@ type Photo = {
   isfamily: number;
 };
 
-async function getFlickrImgs(keyword: string): Promise<any> {
+interface SearchApiResponse {
+  stat: string;
+  photos: {
+    page: number;
+    pages: number;
+    perpage: number;
+    photo: Photo[];
+    total: number;
+  };
+}
+
+async function getFlickrImgs(keyword: string): Promise<SearchApiResponse | null> {
   const searchApi = `https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=3e7cc266ae2b0e0d78e279ce8e361736&format=json&nojsoncallback=1&safe_search=1&text=${keyword}`;
   try {
     const searchRes = await fetch(searchApi);
@@ -27,7 +38,7 @@ async function getFlickrImgs(keyword: string): Promise<any> {
 
 }
 
-async function getNextFlickrImgs(keyword: string, pageNum: number): Promise<any> {
+async function getNextFlickrImgs(keyword: string, pageNum: number): Promise<SearchApiResponse | null> {
   // arg is pageNum?
   const searchApi = `https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=3e7cc266ae2b0e0d78e279ce8e361736&format=json&nojsoncallback=1&safe_search=1&text=${keyword}&page=${pageNum}`;
   try {
@@ -106,6 +117,7 @@ function App() {
 
     // 
     if (loadingRef.current) {
+      console.log('loading...');
       return;
     }
     const nextPage = pageRef.current + 1;
