@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { throttle } from 'lodash';
 import './App.css';
 
@@ -39,7 +39,6 @@ async function getFlickrImgs(keyword: string): Promise<SearchApiResponse | null>
 }
 
 async function getNextFlickrImgs(keyword: string, pageNum: number): Promise<SearchApiResponse | null> {
-  // arg is pageNum?
   const searchApi = `https://api.flickr.com/services/rest/?method=flickr.photos.search&api_key=3e7cc266ae2b0e0d78e279ce8e361736&format=json&nojsoncallback=1&safe_search=1&text=${keyword}&page=${pageNum}`;
   try {
     const searchRes = await fetch(searchApi);
@@ -55,7 +54,6 @@ async function getNextFlickrImgs(keyword: string, pageNum: number): Promise<Sear
 function App() {
   const [stateSearchStr, setStateSearchStr] = useState('');
   const [statePhotos, setStatePhotos] = useState<Photo[]>([]);
-  // const [statePage, setStatePage] = useState(1);
   const pageRef = useRef(1);
   const searchStrRef = useRef('');
   const loadingRef = useRef(false);
@@ -76,13 +74,13 @@ function App() {
 
     const { stat, photos } = data;
     if (!stat && stat !== 'ok') {
+      console.log('response err');
       return;
     }
 
-    const { page, pages, perpage, photo, total } = photos;
+    const { photo } = photos;
 
     setStatePhotos((prevPhotos) => [...prevPhotos, ...photo]);
-
 
   }
 
@@ -104,28 +102,27 @@ function App() {
     setStatePhotos((prevPhotos) => [...prevPhotos, ...photo]);
   }
 
-  const onScroll = () => {
-    console.log('scrollHeight', document.documentElement.scrollHeight);
-    console.log('innerHeight+scrollTop', window.innerHeight + document.documentElement.scrollTop);
-    if (Math.ceil(window.innerHeight + document.documentElement.scrollTop) >= (document.documentElement.scrollHeight)) {
-      loadMore();
-    }
-  };
-
-  const loadMore = () => {
-    console.log('loadMore');
-
-    // 
-    if (loadingRef.current) {
-      console.log('loading...');
-      return;
-    }
-    const nextPage = pageRef.current + 1;
-    pageRef.current = nextPage;
-    getNextPageImg(nextPage);
-  };
-
   useEffect(() => {
+    const loadMore = () => {
+      console.log('loadMore');
+
+      if (loadingRef.current) {
+        console.log('loading...');
+        return;
+      }
+      const nextPage = pageRef.current + 1;
+      pageRef.current = nextPage;
+      getNextPageImg(nextPage);
+    };
+
+    const onScroll = () => {
+      console.log('scrollHeight', document.documentElement.scrollHeight);
+      console.log('innerHeight+scrollTop', window.innerHeight + document.documentElement.scrollTop);
+      if (Math.ceil(window.innerHeight + document.documentElement.scrollTop) >= (document.documentElement.scrollHeight)) {
+        loadMore();
+      }
+    };
+
     const onScrollThrottle = throttle(onScroll, 1000);
 
     window.addEventListener('scroll', onScrollThrottle);
